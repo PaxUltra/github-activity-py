@@ -35,8 +35,6 @@ def parse_events(events_list):
     for (key, value) in event_counts.items():
         total_counts += value
 
-    print(len(events_list), total_counts)
-
     return parsed_events
 
 def print_events(events_list):
