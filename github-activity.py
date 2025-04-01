@@ -6,20 +6,22 @@ from collections import defaultdict
 
 def fetch_user_events(username):
     if not username:
-        print("\nUsername is a required argument.")
-        return None
-    else:
-        # Make a request to the GitHub API
-        events_url = f'https://api.github.com/users/{username}/events'
+        raise ValueError("Username is a required argument.")
 
-        try:
-            with urllib.request.urlopen(events_url) as response:
-                data = response.read().decode('utf-8')
-                events_list = json.loads(data)
-        except urllib.error.HTTPError as e:
-            events_list = {"status": e.code}
+    # Make a request to the GitHub API
+    events_url = f'https://api.github.com/users/{username}/events'
 
-    return events_list
+    try:
+        with urllib.request.urlopen(events_url) as response:
+            if response.status != 200:
+                raise ValueError(f"GitHub API error: {response.status}")
+
+            data = response.read().decode('utf-8')
+            return json.loads(data)
+    except urllib.error.HTTPError as e:
+        raise ValueError(f"GitHub API error: {e.code}")
+    except urllib.error.URLError as e:
+        raise ValueError(f"Network error: {e.reason}")
 
 def parse_events(events_list):
     # A GitHub user may not have any events associated with them, in which case the API will return an empty list
@@ -147,22 +149,16 @@ if __name__ == "__main__":
     # Get username from commandline arguments
     username = sys.argv[1] if len(sys.argv) > 1 else None # The username will be the second argument
 
-    # Get user events
-    events_list = fetch_user_events(username)
+    try:
+        # Get user events
+        events_list = fetch_user_events(username)
 
-    if events_list:
-        # The API may have returned an error status
-        if events_list.get("status"):
-            if events_list.get("status") == 404: # No resource, or forbidden somehow
-                print("\nResource not found.")
-            elif events_list.get("status") == 403 or events_list.get("status") == 429: # Rate limit reached
-                print("\nPlease wait a few minutes, and try your request again.")
+        if not events_list:
+            print("\nNo events to display.\n")
         else:
-            # Parse user events
             parsed_events = parse_events(events_list)
-
-            # Print events
-            if len(parse_events > 0):
-                print_events(parsed_events)
-            else:
-                print("\nNo events to display.")
+            print_events(parsed_events)
+    except ValueError as e:
+        print(f"\n{e}\n")
+    except Exception as e:
+        print(f"\nUnexpected error: {e}\n")
