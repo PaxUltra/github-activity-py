@@ -23,15 +23,19 @@ def fetch_user_events(username):
 
 def parse_events(events_list):
     # A GitHub user may not have any events associated with them, in which case the API will return an empty list
-    if len(events_list < 1):
+    if not events_list:
         parsed_events = []
     else:
         event_counts = defaultdict(int)
 
         # Count the number of occurrences for each type/repo pairing
-        # Example, if the user pushed to demo-repo 7 times, the result will be {('PushEvent', 'demo-repo'): 7}
+        # Example, if the user pushed to demo-repo 7 times, the result will be {('PushEvent', 'demo-repo', 'Unknown'): 7}
         for event in events_list:
-            combo_key = (event.get("type"), event.get("repo").get("name"), event.get("payload").get("action"))
+            event_type = event.get("type", "Unknown")
+            repo_name = event.get("repo", {}).get("name", "Unknown")
+            action = event.get("payload", {}).get("action", "Unknown")
+
+            combo_key = (event_type, repo_name, action)
             event_counts[combo_key] += 1
 
         # Convert back into a list of dictionaries
@@ -147,10 +151,11 @@ if __name__ == "__main__":
     events_list = fetch_user_events(username)
 
     if events_list:
+        # The API may have returned an error status
         if events_list.get("status"):
-            if events_list.get("status") == 404:
+            if events_list.get("status") == 404: # No resource, or forbidden somehow
                 print("\nResource not found.")
-            elif events_list.get("status") == 403 or events_list.get("status") == 429:
+            elif events_list.get("status") == 403 or events_list.get("status") == 429: # Rate limit reached
                 print("\nPlease wait a few minutes, and try your request again.")
         else:
             # Parse user events
