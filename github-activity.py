@@ -52,102 +52,45 @@ def print_events(events_list):
         print("\nNo events to display.\n")
         return
 
+    # Messages for events that do not have an action associated with them
+    event_messages = {
+        "CommitCommentEvent": "Commented on commits {count} times in {repo-name}.",
+        "PushEvent": "Pushed {count} commits to {repo-name}.",
+        "CreateEvent": "Created {repo-name}.",
+        "ForkEvent": "Forked {repo-name}.",
+        "GollumEvent": "Created/updated wiki pages {count} times in {repo-name}.",
+        "PublicEvent": "Made {repo-name} public.",
+        "WatchEvent": "Started watching {repo-name}.",
+        "DeleteEvent": "Deleted {repo-name}.",
+        "MemberEvent": "Accepted invitation to {repo-name}."
+    }
+
+    # Messages for events that will have an action in their payload
+    action_event_messages = {
+        "PullRequestEvent": "pull requests",
+        "IssueCommentEvent": "issue comments",
+        "IssueEvents": "issues",
+        "PullRequestReviewEvent": "pull request reviews",
+        "PullRequestReviewCommentEvent": "pull request review comments",
+        "PullRequestReviewThreadEvent": "pull request comment threads",
+        "ReleaseEvent": "releases",
+        "SponsorshipEvent": "sponsorship listings"
+    }
+
+    print() # Just formatting
+
     for event in events_list:
-        match event.get("type"):
-            case "CommitCommentEvent":
-                print(f'Commented on commits {event.get("count")} times in {event.get("repo-name")}.')
-            case "PushEvent":
-                print(f'Pushed {event.get("count")} commits to {event.get("repo-name")}.')
-            case "CreateEvent":
-                print(f'Created {event.get("repo-name")}.')
-            case "PullRequestReviewEvent":
-                match event.get("action"):
-                    case "created":
-                        print(f'Created {event.get("count")} pull request reviews for {event.get("repo-name")}.')
-            case "PullRequestReviewCommentEvent":
-                match event.get("action"):
-                    case "created":
-                        print(f'Commented {event.get("count")} times on pull request reviews for {event.get("repo-name")}.')
-            case "IssueCommentEvent":
-                match event.get("action"):
-                    case "created":
-                        print(f'Commented {event.get("count")} times on issues for {event.get("repo-name")}.')
-                    case "edited":
-                        print(f'Edited {event.get("count")} issue comments in {event.get("repo-name")}.')
-                    case "deleted":
-                        print(f'Deleted {event.get("count")} issue comments in {event.get("repo-name")}.')
-            case "PullRequestEvent":
-                match event.get("action"):
-                    case "opened":
-                        print(f'Opened {event.get("count")} pull requests for {event.get("repo-name")}.')
-                    case "edited":
-                        print(f'Edited {event.get("count")} pull requests for {event.get("repo-name")}.')
-                    case "closed":
-                        print(f'Closed {event.get("count")} pull requests for {event.get("repo-name")}.')
-                    case "reopened":
-                        print(f'Reopened {event.get("count")} pull requests for {event.get("repo-name")}.')
-                    case "assigned":
-                        print(f'Assigned pull requests {event.get("count")} times in {event.get("repo-name")}.')
-                    case "unassigned":
-                        print(f'Unassigned pull requests {event.get("count")} times in {event.get("repo-name")}.')
-                    case "review_requested":
-                        print(f'Requested reviews for {event.get("count")} pull requests in {event.get("repo-name")}.')
-                    case "review_request_removed":
-                        print(f'Removed review requests {event.get("count")} times in {event.get("repo-name")}.')
-                    case "labeled":
-                        print(f'Labeled pull requests {event.get("count")} times in {event.get("repo-name")}.')
-                    case "unlabeled":
-                        print(f'Unlabeled pull requests {event.get("count")} times in {event.get("repo-name")}.')
-                    case "synchronize":
-                        print(f'Synchronized pull requests {event.get("count")} times in {event.get("repo-name")}.')
-            case "DeleteEvent":
-                print(f'Deleted {event.get("count")} branches/tags in {event.get("repo-name")}.')
-            case "ForkEvent":
-                print(f'Forked {event.get("repo-name")}.')
-            case "GollumEvent":
-                print(f'Created/updated wiki pages {event.get("count")} times in {event.get("repo-name")}.')
-            case "DeleteEvent":
-                print(f'Deleted {event.get("count")} branches/tags in {event.get("repo-name")}.')
-            case "IssuesEvent":
-                match event.get("action"):
-                    case "opened":
-                        print(f'Opened {event.get("count")} issues in {event.get("repo-name")}.')
-                    case "edited":
-                        print(f'Edited {event.get("count")} issues in {event.get("repo-name")}.')
-                    case "closed":
-                        print(f'Closed {event.get("count")} issues in {event.get("repo-name")}.')
-                    case "reopened":
-                        print(f'Reopened {event.get("count")} issues in {event.get("repo-name")}.')
-                    case "assigned":
-                        print(f'Assigned issues {event.get("count")} times in {event.get("repo-name")}.')
-                    case "unassigned":
-                        print(f'Unassigned issues {event.get("count")} times in {event.get("repo-name")}.')
-                    case "labeled":
-                        print(f'Labeled issues {event.get("count")} times in {event.get("repo-name")}.')
-                    case "unlabeled":
-                        print(f'Unlabeled issues {event.get("count")} times in {event.get("repo-name")}.')
-            case "MemberEvent":
-                print(f'Accepted invitation to {event.get("repo-name")}.')
-            case "PublicEvent":
-                print(f'Made {event.get("repo-name")} public.')
-            case "PullRequestReviewThreadEvent":
-                match event.get("action"):
-                    case "resolved":
-                        print(f'Resolved {event.get("count")} pull request comment threads in {event.get("repo-name")}.')
-                    case "unresolved":
-                        print(f'Unresolved {event.get("count")} pull request comment threads in {event.get("repo-name")}.')
-            case "ReleaseEvent":
-                match event.get("action"):
-                    case "published":
-                        print(f'Published {event.get("count")} releases in {event.get("repo-name")}.')
-            case "SponsorshipEvent":
-                match event.get("action"):
-                    case "created":
-                        print(f'Created {event.get("count")} sponsorship listings for {event.get("repo-name")}.')
-            case "WatchEvent":
-                print(f'Started watching {event.get("repo-name")}.')
-            case _:
-                print(f'Unhandled Event: {event.get("type")} - {event.get("action")}')
+        message_template = event_messages.get(event["type"])
+        if message_template:
+            print(message_template.format(**event))
+        elif event["type"] in action_event_messages.keys():
+            action = event.get("action", "Unknown")
+            noun = action_event_messages.get(event["type"], "Unknown")
+            print(f'{action.capitalize()} {event["count"]} {noun} in {event["repo-name"]}.')
+        else:
+            print(f'Unhandled Event: {event["type"]} - {event.get("action", "N/A")}')
+
+    print() # Just formatting
 
 if __name__ == "__main__":
     # Get username from commandline arguments
