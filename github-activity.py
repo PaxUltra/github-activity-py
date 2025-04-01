@@ -48,6 +48,10 @@ def parse_events(events_list):
     return parsed_events
 
 def print_events(events_list):
+    if not events_list:
+        print("\nNo events to display.\n")
+        return
+
     for event in events_list:
         match event.get("type"):
             case "CommitCommentEvent":
@@ -153,11 +157,11 @@ if __name__ == "__main__":
         # Get user events
         events_list = fetch_user_events(username)
 
-        if not events_list:
-            print("\nNo events to display.\n")
-        else:
-            parsed_events = parse_events(events_list)
-            print_events(parsed_events)
+        # Transform event data into the form we want
+        parsed_events = parse_events(events_list)
+
+        # Display data to the user in a readable format
+        print_events(parsed_events)
     except ValueError as e:
         print(f"\n{e}\n")
     except Exception as e:
