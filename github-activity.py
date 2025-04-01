@@ -24,26 +24,26 @@ def fetch_user_events(username):
         raise ValueError(f"Network error: {e.reason}")
 
 def parse_events(events_list):
+    if not isinstance(events_list, list):
+        raise ValueError("Parse_Events expected a list, but got a different object.")
+
     # A GitHub user may not have any events associated with them, in which case the API will return an empty list
-    if not events_list:
-        parsed_events = []
-    else:
-        event_counts = defaultdict(int)
+    event_counts = defaultdict(int)
 
-        # Count the number of occurrences for each type/repo pairing
-        # Example, if the user pushed to demo-repo 7 times, the result will be {('PushEvent', 'demo-repo', 'Unknown'): 7}
-        for event in events_list:
-            event_type = event.get("type", "Unknown")
-            repo_name = event.get("repo", {}).get("name", "Unknown")
-            action = event.get("payload", {}).get("action", "Unknown")
+    # Count the number of occurrences for each type/repo pairing
+    # Example, if the user pushed to demo-repo 7 times, the result will be {('PushEvent', 'demo-repo', 'Unknown'): 7}
+    for event in events_list:
+        event_type = event.get("type", "Unknown")
+        repo_name = event.get("repo", {}).get("name", "Unknown")
+        action = event.get("payload", {}).get("action", "Unknown")
 
-            combo_key = (event_type, repo_name, action)
-            event_counts[combo_key] += 1
+        combo_key = (event_type, repo_name, action)
+        event_counts[combo_key] += 1
 
-        # Convert back into a list of dictionaries
-        parsed_events = [
-            {"type": event_type, "repo-name": repo_name, "action": action, "count": count} for (event_type, repo_name, action), count in event_counts.items()
-        ]
+    # Convert back into a list of dictionaries
+    parsed_events = [
+        {"type": event_type, "repo-name": repo_name, "action": action, "count": count} for (event_type, repo_name, action), count in event_counts.items()
+    ]
 
     return parsed_events
 
