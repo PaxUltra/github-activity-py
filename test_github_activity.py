@@ -2,8 +2,9 @@ import unittest
 import json
 import urllib.error
 import urllib.request
+from io import StringIO
 from unittest.mock import patch, Mock, MagicMock
-from github_activity import fetch_user_events, parse_events
+from github_activity import fetch_user_events, parse_events, print_events
 
 class TestGithubActivityFunctions(unittest.TestCase):
     @patch("urllib.request.urlopen")  # Patch correctly
@@ -114,3 +115,23 @@ class TestGithubActivityFunctions(unittest.TestCase):
 
         parsed_events = parse_events(events_list)
         self.assertEqual(parsed_events, expected_output)
+
+    def test_prints_push_event(self):
+        # Empty list
+        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+            print_events([])
+            self.assertEqual(mock_stdout.getvalue(), "\nNo events to display.\n\n")
+
+        # Full event list
+        events = [
+            {"type": "PushEvent", "repo-name": "some/repo", "action": "Unknown", "count": 3},
+            {"type": "PullRequestEvent", "repo-name": "some/repo", "action": "created", "count": 99},
+            {"type": "Unknown", "repo-name": "Unknown", "action": "Unknown", "count": 1}
+            ]
+        expected_output = "\nPushed 3 commits to some/repo.\n" \
+        "Created 99 pull requests in some/repo.\n" \
+        "Unhandled Event: Unknown - Unknown\n\n"
+
+        with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+            print_events(events)
+            self.assertEqual(mock_stdout.getvalue(), expected_output)
