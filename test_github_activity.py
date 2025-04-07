@@ -49,3 +49,68 @@ class TestGithubActivityFunctions(unittest.TestCase):
             fetch_user_events("anyuser")
 
         self.assertIn("Network error: Network unreachable", str(context.exception))
+
+    def test_parse_events(self):
+        # Invalid events list
+        events_list = {}
+        with self.assertRaises(ValueError) as context:
+            parse_events(events_list)
+        
+        self.assertEqual(str(context.exception), "Parse_Events expected a list, but got a different object.")
+
+        # Emtpy events list
+        events_list = []
+        parsed_events = parse_events(events_list)
+        self.assertEqual(parsed_events, [])
+
+        # Valid list
+        events_list = [
+            {
+                "type": "PushEvent",
+                "repo": {
+                    "name": "demorepo"
+                },
+                "payload": {}
+            },
+            {
+                "type": "ActionEvent",
+                "repo": {
+                    "name": "demorepo"
+                },
+                "payload": {
+                    "action": "created"
+                }
+            }
+        ]
+
+        expected_output = [
+            {
+                "type": "PushEvent",
+                "repo-name": "demorepo",
+                "action": "Unknown",
+                "count": 1
+            },
+            {
+                "type": "ActionEvent",
+                "repo-name": "demorepo",
+                "action": "created",
+                "count": 1
+            }
+        ]
+
+        parsed_events = parse_events(events_list)
+        self.assertEqual(parsed_events, expected_output)
+
+        # Malformed event list
+        events_list = [{}]
+        expected_output = [
+            {
+                "type": "Unknown",
+                "repo-name": "Unknown",
+                "action": "Unknown",
+                "count": 1
+            }
+        ]
+
+        parsed_events = parse_events(events_list)
+        self.assertEqual(parsed_events, expected_output)
