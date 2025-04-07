@@ -13,9 +13,6 @@ def fetch_user_events(username):
 
     try:
         with urllib.request.urlopen(events_url) as response:
-            if response.status != 200:
-                raise ValueError(f"GitHub API error: {response.status}")
-
             data = response.read().decode('utf-8')
             return json.loads(data)
     except urllib.error.HTTPError as e:
